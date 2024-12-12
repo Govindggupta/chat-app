@@ -2,7 +2,7 @@ import { isValidUsername, isValidEmail } from "6pp";
 
 export const usernameValidator = (username: string): { isValid: boolean; errorMessage: string; } => {
     if (!isValidUsername(username)) {
-        return { isValid: false, errorMessage: "Username must be 3-16 characters long and can only contain letters, numbers" };
+        return { isValid: false, errorMessage: "Username must be 3-16 characters long and can only contain letters, numbers." };
     }
     return { isValid: true, errorMessage: "" };
 };

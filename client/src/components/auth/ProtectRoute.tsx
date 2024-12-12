@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom"
 
 interface ProtectRouteProps {
     user: boolean;
@@ -6,11 +6,9 @@ interface ProtectRouteProps {
 }
 
 const ProtectRoute = ({ user, redirect = "/login" }: ProtectRouteProps) => {
-    if (!user) {
-        return <Navigate to={redirect} />;
-    }
+    if (!user) return <Navigate to={redirect} />
+
     return <Outlet />;
 }
 
-export default ProtectRoute;
-
+export default ProtectRoute

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { FaCamera } from "react-icons/fa";
+import { FiSun, FiMoon } from "react-icons/fi";
 import { useFileHandler, useInputValidation, useStrongPassword } from "6pp";
 import { usernameValidator, fullNameValidator, emailValidator } from "../utils/validators.ts";
 import { Helmet } from "react-helmet-async";
+import { useTheme } from "../context/UseContext";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { darkMode, toggleTheme } = useTheme();
 
   const username = useInputValidation("", usernameValidator);
   const password = useStrongPassword();
@@ -29,6 +32,14 @@ const Login = () => {
         <title>{isLogin ? "Login" : "Register"} - Convo</title>
         <meta name="description" content={isLogin ? "Login to Convo" : "Create a new account on Convo"} />
       </Helmet>
+
+      {/* Theme Toggle Button - Absolute Positioned */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-900 dark:text-white"
+      >
+        {darkMode ? <FiSun size={24} /> : <FiMoon size={24} />}
+      </button>
 
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">

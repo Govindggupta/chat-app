@@ -1,8 +1,7 @@
-
 const Groups = () => {
   return (
     <div>
-      <h1>Group</h1>
+      groups
     </div>
   )
 }
