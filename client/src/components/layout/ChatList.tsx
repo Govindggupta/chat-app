@@ -1,23 +1,35 @@
-import { useState } from 'react';
+import { lazy, useState } from 'react';
 import { sampleChats } from '../../constants/sampleData';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+
+const Search = lazy(() => import("../dialog/Search"));
 
 const ChatList = () => {
+  const navigate = useNavigate();
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
 
   const formatTime = (timestamp: string) => {
     return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
   };
 
+  const handleChatSelect = (chatId: string) => {
+    setSelectedChat(chatId);
+    navigate(`/chat/${chatId}`);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 w-full max-w-md border-r border-gray-200 dark:border-gray-700">
       <div className="p-4">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Chats</h2>
-        <div className="space-y-2">
+        
+        <Search />
+
+        <div className="space-y-2 mt-4">
           {sampleChats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => setSelectedChat(chat.id)}
+              onClick={() => handleChatSelect(chat.id)}
               className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors duration-200
                 ${selectedChat === chat.id
                   ? 'bg-indigo-50 dark:bg-gray-700'
