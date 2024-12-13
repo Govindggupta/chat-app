@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { MdNotificationsActive } from "react-icons/md"
-import { HiEllipsisHorizontal, HiMiniUserGroup } from "react-icons/hi2"
+import { HiMiniUserGroup } from "react-icons/hi2"
 import { FiSun, FiMoon } from "react-icons/fi"
 import { BiLogOut } from "react-icons/bi"
 import { Dialog, Transition } from '@headlessui/react'
