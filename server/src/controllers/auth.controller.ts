@@ -87,7 +87,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         }
 
 
-        if(!user || !isPasswordCorrect) {    
+        if (!user || !isPasswordCorrect) {
             res.status(400).json({ error: "Invalid username or password" });
             return;
         }
@@ -100,7 +100,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// export const logout = async (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie("jwt");
+        res.status(200).json({ message: "Logged out successfully" });
 
-// }
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
 
