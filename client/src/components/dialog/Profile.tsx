@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { FaCamera } from "react-icons/fa";
-import { FiEdit2 } from "react-icons/fi";
-import { BiLogOut } from "react-icons/bi";
 import { useFileHandler } from "6pp";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const [username, setUsername] = useState("JohnDoe");
   const [bio, setBio] = useState("Hey there! I'm using Convo");
   const avatar = useFileHandler("single", 10);
 
-  const handleLogout = () => {
-    // Add logout logic here
-  };
+  const email = "johndoe@example.com"; // Example email, replace with actual user email
+  const username = "JohnDoe"; // Example username
+
+  // const handleLogout = () => {
+  //   // Add logout logic here
+  // };
 
   return (
     <section className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden">
@@ -44,26 +44,14 @@ const Profile = () => {
 
       {/* Profile Info */}
       <div className="mt-20 px-6 py-4 space-y-6">
-        {/* Username */}
+        {/* Username Display */}
         <div className="text-center">
-          {isEditing ? (
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="text-2xl font-bold text-center bg-transparent border-b-2 border-indigo-500 focus:outline-none dark:text-white"
-            />
-          ) : (
-            <div className="flex items-center justify-center space-x-2">
-              <h2 className="text-2xl font-bold dark:text-white">{username}</h2>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="p-1 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
-              >
-                <FiEdit2 size={16} />
-              </button>
-            </div>
-          )}
+          <h2 className="text-2xl font-bold dark:text-white">{username}</h2>
+        </div>
+
+        {/* Email Display */}
+        <div className="text-center">
+          <p className="text-gray-600 dark:text-gray-400">{email}</p>
         </div>
 
         {/* Bio */}
@@ -81,26 +69,22 @@ const Profile = () => {
         </div>
 
         {/* Edit/Save Button */}
-        {isEditing && (
-          <div className="flex justify-center">
+        <div className="flex justify-center">
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Edit Bio
+            </button>
+          ) : (
             <button
               onClick={() => setIsEditing(false)}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
             >
               Save Changes
             </button>
-          </div>
-        )}
-
-        {/* Logout Button */}
-        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
-          >
-            <BiLogOut size={20} />
-            <span>Logout</span>
-          </button>
+          )}
         </div>
       </div>
     </section>

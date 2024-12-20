@@ -14,6 +14,14 @@ const MessageInput = () => {
     }
   }
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      // Handle the selected files (e.g., upload or preview)
+      console.log(files);
+    }
+  }
+
   return (
     <div className="p-2 sm:p-4 bg-white dark:bg-gray-800">
       <div className="flex items-center gap-1 sm:gap-2">
@@ -27,14 +35,27 @@ const MessageInput = () => {
           
           {isDropdownOpen && (
             <div className="absolute bottom-full left-0 mb-2 flex flex-col bg-white dark:bg-gray-800 shadow-lg rounded-lg p-1 sm:p-2">
-              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+              <label className="flex items-center gap-2 px-3 sm:px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                 <IoMdImages className="text-gray-500 dark:text-gray-400" />
                 <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Photo/Video</span>
-              </button>
-              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                <input 
+                  type="file" 
+                  accept="image/*,video/*" 
+                  onChange={handleFileSelect} 
+                  className="hidden" 
+                />
+              </label>
+              <label className="flex items-center gap-2 px-3 sm:px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                 <IoDocumentText className="text-gray-500 dark:text-gray-400" />
                 <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">Document</span>
-              </button>
+                <input 
+                  type="file" 
+                  accept="*/*" 
+                  onChange={handleFileSelect} 
+                  className="hidden" 
+                  multiple 
+                />
+              </label>
             </div>
           )}
         </div>

@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react"
 import { BsThreeDotsVertical } from "react-icons/bs"
-import { MdNotificationsActive } from "react-icons/md"
 import { HiMiniUserGroup } from "react-icons/hi2"
 import { FiSun, FiMoon } from "react-icons/fi"
 import { BiLogOut } from "react-icons/bi"
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import Profile from '../dialog/Profile'
+import NewGroup from "../dialog/NewGroup"
 
 const Header = () => {
     const [showMenu, setShowMenu] = useState(false);
     const [theme, setTheme] = useState("light");
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
@@ -36,6 +37,11 @@ const Header = () => {
         console.log("Logging out...");
     };
 
+    const handleNewGroupClick = () => {
+        setIsNewGroupOpen(true);
+        setShowMenu(false); // Close the mobile menu when opening New Group
+    };
+
     return (
         <>
             <header className="bg-white dark:bg-gray-800 shadow-md py-4 px-6">
@@ -47,11 +53,7 @@ const Header = () => {
                     <div className="flex items-center space-x-4">
                         {/* Desktop Menu */}
                         <div className="hidden md:flex items-center space-x-8 text-gray-900 dark:text-white">
-                            <div className="flex items-center space-x-2 cursor-pointer">
-                                <MdNotificationsActive size={24} />
-                                <span>Notifications</span>
-                            </div>
-                            <div className="flex items-center space-x-2 cursor-pointer">
+                            <div className="flex items-center space-x-2 cursor-pointer" onClick={handleNewGroupClick}>
                                 <HiMiniUserGroup size={24} />
                                 <span>New Group</span>
                             </div>
@@ -90,10 +92,10 @@ const Header = () => {
 
                             {showMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border dark:border-gray-700">
-                                    <div className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white transition-colors duration-200">
-                                        <span>Notifications</span>
-                                    </div>
-                                    <div className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white transition-colors duration-200">
+                                    <div 
+                                        onClick={handleNewGroupClick}
+                                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-gray-900 dark:text-white transition-colors duration-200"
+                                    >
                                         <span>New Group</span>
                                     </div>
                                     <div 
@@ -151,6 +153,45 @@ const Header = () => {
                             >
                                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all mx-4">
                                     <Profile />
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
+
+            {/* New Group Dialog */}
+            <Transition appear show={isNewGroupOpen} as={Fragment}>
+                <Dialog 
+                    as="div" 
+                    className="relative z-50" 
+                    onClose={() => setIsNewGroupOpen(false)}
+                >
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black bg-opacity-25" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all mx-4">
+                                    <NewGroup />
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>
