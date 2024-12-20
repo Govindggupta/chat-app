@@ -57,7 +57,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { username, password } = req.body;
@@ -110,3 +109,28 @@ export const logout = async (req: Request, res: Response) => {
     }
 }
 
+
+interface CustomRequest extends Request {
+    user?: {
+        _id: string;
+    };  
+}
+
+export const home = async (req: CustomRequest, res: Response) => {
+    try {
+        if (!req.user || !req.user._id) {
+            res.status(401).json({ error: "Unauthorized: No Token Provided" });
+            return;
+        }
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            res.status(404).json({ error: "User not found" });
+            return;
+        }
+        res.status(200).json({ user });
+
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
