@@ -5,8 +5,14 @@ import { useFileHandler, useInputValidation, useStrongPassword } from "6pp";
 import { usernameValidator, fullNameValidator, emailValidator } from "../utils/validators.ts";
 import { Helmet } from "react-helmet-async";
 import { useTheme } from "../context/UseContext";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  
   const [isLogin, setIsLogin] = useState(true);
   const { darkMode, toggleTheme } = useTheme();
 
@@ -17,13 +23,50 @@ const Login = () => {
 
   const avatar = useFileHandler("single", 10);
 
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      const res = await axios.post('/api/auth/login', credentials, { withCredentials: true });
+      return res.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      navigate("/");
+    },
+    onError: (error) => {
+      // console.error('Login error:', error);
+      throw new Error(error.message);
+    },
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: async (userData: { fullName: string; username: string; email: string; password: string }) => {
+      const res = await axios.post('/api/auth/register', userData, { withCredentials: true });
+      return res.data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      navigate("/");
+    },
+    onError: (error) => {
+      // console.error('Registration error:', error);
+      throw new Error(error.message);
+    },
+  });
+
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-  }
+    e.preventDefault();
+    loginMutation.mutate({ username: username.value, password: password.value });
+  };
 
   const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-  }
+    e.preventDefault();
+    registerMutation.mutate({
+      fullName: fullName.value,
+      username: username.value,
+      email: email.value,
+      password: password.value,
+    });
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
