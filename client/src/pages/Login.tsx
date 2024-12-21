@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  
+
   const [isLogin, setIsLogin] = useState(true);
   const { darkMode, toggleTheme } = useTheme();
 
@@ -23,44 +23,85 @@ const Login = () => {
 
   const avatar = useFileHandler("single", 10);
 
-  const loginMutation = useMutation({
+  const {
+    mutate: loginMutation,
+    isPending: isLoginPending,
+    isError: isLoginError,
+    error: loginError
+  } = useMutation({
     mutationFn: async (credentials: { username: string; password: string }) => {
-      const res = await axios.post('/api/auth/login', credentials, { withCredentials: true });
-      return res.data;
+      try {
+        const res = await axios.post('/api/auth/login', credentials, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error(res.data.error || "Something went wrong");
+        }
+
+        return res.data;
+      }
+      catch (error) {
+        if (axios.isAxiosError(error)) {
+          const message = error.response?.data?.error || "An unknown error occurred";
+          throw new Error(message);
+        }
+        throw new Error("An unknown error occurred");
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       navigate("/");
-    },
-    onError: (error) => {
-      // console.error('Login error:', error);
-      throw new Error(error.message);
-    },
+    }
   });
 
-  const registerMutation = useMutation({
+  const {
+    mutate: registerMutation,
+    isPending: isRegisterPending,
+    isError: isRegisterError,
+    error: registerError
+  } = useMutation({
     mutationFn: async (userData: { fullName: string; username: string; email: string; password: string }) => {
-      const res = await axios.post('/api/auth/register', userData, { withCredentials: true });
-      return res.data;
+      try {
+        const res = await axios.post('/api/auth/register', userData, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error(res.data.error || "Something went wrong");
+        }
+        return res.data;
+      }
+      catch (error) {
+        if (axios.isAxiosError(error)) {
+          const message = error.response?.data?.error || "An unknown error occurred";
+          throw new Error(message);
+        }
+        throw new Error("An unknown error occurred");
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["authUser"] });
       navigate("/");
-    },
-    onError: (error) => {
-      // console.error('Registration error:', error);
-      throw new Error(error.message);
-    },
+    }
   });
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    loginMutation.mutate({ username: username.value, password: password.value });
+    loginMutation({ username: username.value, password: password.value });
   };
 
   const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    registerMutation.mutate({
+    registerMutation({
       fullName: fullName.value,
       username: username.value,
       email: email.value,
@@ -76,7 +117,6 @@ const Login = () => {
         <meta name="description" content={isLogin ? "Login to Convo" : "Create a new account on Convo"} />
       </Helmet>
 
-      {/* Theme Toggle Button - Absolute Positioned */}
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-900 dark:text-white"
@@ -139,15 +179,19 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-500">{password.error}</p>
                   )}
                 </div>
+                {isLoginError && (
+                  <p className="mt-1 text-sm text-red-500">{loginError.message}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium ${isLoginPending ? 'bg-gray-400' : 'bg-indigo-600'} hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200`}
+                  disabled={isLoginPending}
                 >
-                  Sign in
+                  {isLoginPending ? "Loading..." : "Sign in"}
                 </button>
               </form>
             </div>
-          ) : ( // sign up form
+          ) : ( // sign up form 
             <div className="space-y-6">
               <div className="flex justify-center">
                 <div className="relative">
@@ -254,11 +298,15 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-500">{password.error}</p>
                   )}
                 </div>
+                {isRegisterError && (
+                  <p className="mt-1 text-sm text-red-500">{registerError.message}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium ${isRegisterPending ? 'bg-gray-400' : 'bg-green-600'} hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200`}
+                  disabled={isRegisterPending}
                 >
-                  Create Account
+                  {isRegisterPending ? "Loading..." : "Create Account"}
                 </button>
               </form>
             </div>
