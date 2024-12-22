@@ -45,17 +45,17 @@ const Header = () => {
 
     const logoutMutation = useMutation({
         mutationFn: async () => {
-          await axios.post("/api/auth/logout", {}, { withCredentials: true });
+            await axios.post("/api/auth/logout", {}, { withCredentials: true });
         },
         onSuccess: async () => {
-          await queryClient.invalidateQueries({ queryKey: ["authUser"] });
-          navigate("/login");
+            await queryClient.invalidateQueries({ queryKey: ["authUser"] });
+            navigate("/login");
         },
         onError: (error) => {
-          console.error("Logout failed:", error);
-          // Add error handling UI here
+            console.error("Logout failed:", error);
+            // Add error handling UI here
         },
-      });
+    });
 
     const handleLogout = () => {
         logoutMutation.mutate();

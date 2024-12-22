@@ -21,8 +21,11 @@ const Login = () => {
   const fullName = useInputValidation("", fullNameValidator);
   const email = useInputValidation("", emailValidator);
 
-  const avatar = useFileHandler("single", 10);
+  const avatar = useFileHandler("single", 10); // Assuming useFileHandler manages file and preview
 
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+
+  // Mutation for Login
   const {
     mutate: loginMutation,
     isPending: isLoginPending,
@@ -32,7 +35,6 @@ const Login = () => {
     mutationFn: async (credentials: { username: string; password: string }) => {
       try {
         const res = await axios.post('/api/auth/login', credentials, {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -59,16 +61,16 @@ const Login = () => {
     }
   });
 
+  // Mutation for Register
   const {
     mutate: registerMutation,
     isPending: isRegisterPending,
     isError: isRegisterError,
     error: registerError
   } = useMutation({
-    mutationFn: async (userData: { fullName: string; username: string; email: string; password: string }) => {
+    mutationFn: async (userData: { fullName: string; username: string; email: string; password: string; avatar?: string }) => {
       try {
         const res = await axios.post('/api/auth/register', userData, {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -94,24 +96,54 @@ const Login = () => {
     }
   });
 
+  // Helper function to convert File to Base64
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          resolve(reader.result);
+        } else {
+          reject("Failed to convert to base64.");
+        }
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle Login Submission
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     loginMutation({ username: username.value, password: password.value });
   };
 
-  const handleSignUp = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle Sign Up Submission
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    let avatarData: string | undefined = undefined;
+    if (avatar.file) {
+      try {
+        avatarData = await convertToBase64(avatar.file);
+      } catch (err) {
+        console.error("Error converting avatar to base64:", err);
+        setAvatarError("Failed to process avatar image.");
+        return;
+      }
+    }
+
     registerMutation({
       fullName: fullName.value,
       username: username.value,
       email: email.value,
       password: password.value,
+      avatar: avatarData, // Include avatar data
     });
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-
       <Helmet>
         <title>{isLogin ? "Login" : "Register"} - Convo</title>
         <meta name="description" content={isLogin ? "Login to Convo" : "Create a new account on Convo"} />
@@ -120,6 +152,7 @@ const Login = () => {
       <button
         onClick={toggleTheme}
         className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-900 dark:text-white"
+        aria-label="Toggle theme"
       >
         {darkMode ? <FiSun size={24} /> : <FiMoon size={24} />}
       </button>
@@ -135,7 +168,7 @@ const Login = () => {
         </div>
 
         <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-4 shadow-xl rounded-lg sm:px-10">
-          {isLogin ? ( // sign in form
+          {isLogin ? ( // Login Form
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
                 Login
@@ -191,8 +224,9 @@ const Login = () => {
                 </button>
               </form>
             </div>
-          ) : ( // sign up form 
+          ) : ( // Sign Up Form
             <div className="space-y-6">
+              {/* Avatar Upload Section */}
               <div className="flex justify-center">
                 <div className="relative">
                   <img
@@ -215,13 +249,16 @@ const Login = () => {
                   </label>
                 </div>
               </div>
-              {avatar.error && (
-                <p className="mt-1 text-sm text-red-500 text-center">{avatar.error}</p>
+              {avatarError && (
+                <p className="mt-1 text-sm text-red-500 text-center">{avatarError}</p>
               )}
+
+              {/* Registration Form */}
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
                 Register
               </h2>
               <form className="space-y-4" onSubmit={handleSignUp}>
+                {/* Full Name */}
                 <div>
                   <label
                     htmlFor="fullname"
@@ -241,6 +278,8 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-600">{fullName.error}</p>
                   )}
                 </div>
+
+                {/* Username */}
                 <div>
                   <label
                     htmlFor="reg-username"
@@ -260,6 +299,8 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-500">{username.error}</p>
                   )}
                 </div>
+
+                {/* Email */}
                 <div>
                   <label
                     htmlFor="email"
@@ -279,6 +320,8 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-600">{email.error}</p>
                   )}
                 </div>
+
+                {/* Password */}
                 <div>
                   <label
                     htmlFor="reg-password"
@@ -298,9 +341,13 @@ const Login = () => {
                     <p className="mt-1 text-sm text-red-500">{password.error}</p>
                   )}
                 </div>
+
+                {/* Registration Error */}
                 {isRegisterError && (
                   <p className="mt-1 text-sm text-red-500">{registerError.message}</p>
                 )}
+
+                {/* Submit Button */}
                 <button
                   type="submit"
                   className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium ${isRegisterPending ? 'bg-gray-400' : 'bg-green-600'} hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200`}
@@ -311,6 +358,8 @@ const Login = () => {
               </form>
             </div>
           )}
+          
+          {/* Toggle Between Login and Register */}
           <button
             onClick={() => setIsLogin(!isLogin)}
             className="mt-4 w-full text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors duration-200"

@@ -2,57 +2,80 @@ import { Request, Response } from "express";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
-import { error } from "console";
+import { v2 as cloudinary } from "cloudinary";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { fullName, username, email, password } = req.body;
+        const { fullName, username, email, password, avatar } = req.body;
 
+        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            res.status(400).json({ error: "Invalid email formata" });
+            res.status(400).json({ error: "Invalid email format" });
             return;
         }
 
+        // Check for existing username
         const existingUser = await User.findOne({ username });
         if (existingUser) {
             res.status(400).json({ error: "Username is already taken" });
             return;
         }
 
+        // Check for existing email
         const existingEmail = await User.findOne({ email });
         if (existingEmail) {
             res.status(400).json({ error: "Email is already taken" });
             return;
         }
 
+        // Validate password strength
         const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
         if (!passwordRegex.test(password)) {
-            console.log(error);
             res.status(400).json({
                 error:
-                    "Password must be at least 8 characters long and include letters, numbers, capital character and special characters.",
+                    "Password must be at least 8 characters long and include letters, numbers, capital characters, and special characters.",
             });
             return;
         }
 
+        // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Handle avatar upload
+        let avatarUrl = "/avatar-placeholder.png";
+        if (avatar) {
+            try {
+                const uploadResponse = await cloudinary.uploader.upload(avatar, {
+                    folder: "avatars", // Specify folder in Cloudinary
+                    resource_type: "image",
+                });
+                avatarUrl = uploadResponse.secure_url;
+            } catch (error) {
+                console.error("Cloudinary upload error:", error);
+                res.status(500).json({ error: "Avatar upload failed" });
+                return;
+            }
+        }
+
+        // Create new user
         const newUser = new User({
             fullName,
             username,
             email,
             password: hashedPassword,
+            avatar: avatarUrl,
         });
 
         await newUser.save();
 
+        // Generate token and set cookie
         generateTokenAndSetCookie(newUser._id.toString(), res);
 
         res.status(201).json({ newUser });
     } catch (error) {
-        console.log(error)
+        console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
