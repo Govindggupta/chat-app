@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "/avatar-placeholder.png",
     },
+    bio:{
+        type: String,
+        default: "Hey there! I'm using Convo",
+    }
 }, {
     timestamps: true,
 });
