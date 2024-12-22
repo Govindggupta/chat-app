@@ -10,6 +10,7 @@ import NewGroup from "../dialog/NewGroup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 const Header = () => {
     const queryClient = useQueryClient();
@@ -20,21 +21,32 @@ const Header = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
 
+    
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
         setTheme(savedTheme);
         document.documentElement.classList.toggle("dark", savedTheme === "dark");
     }, []);
-
+    
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
         setTheme(newTheme);
         localStorage.setItem("theme", newTheme);
         document.documentElement.classList.toggle("dark");
     };
+    interface AuthUser {
+        user: {
+            username: string;
+            avatar: string;
+        };
+    }
+    const { data: authUser } = useQuery<AuthUser> ({
+        queryKey: ["authUser"],
+    });
 
     const handleProfileClick = () => {
         setIsProfileOpen(true);
+        navigate(`/profile/${authUser?.user.username}`);
         setShowMenu(false); // Close the mobile menu when opening profile
     };
 
@@ -81,7 +93,11 @@ const Header = () => {
                                 onClick={handleProfileClick}
                                 className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 cursor-pointer"
                             >
-                                {/* Profile image */}
+                                <img
+                                    src={authUser?.user.avatar || "/avatar-placeholder.png"}
+                                    alt="Profile"
+                                    className="w-full h-full rounded-full"
+                                />  
                             </div>
                             {/* Desktop Logout Button - Icon Only */}
                             <button

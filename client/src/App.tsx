@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, data } from "react-router-dom";
 import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import axios from "axios";
 import { ThemeProvider } from "./context/UseContext";
@@ -47,6 +47,7 @@ const AppContent = () => {
         <BrowserRouter>
           <Suspense fallback={<Loader />}>
             <Routes>
+              <Route path="/profile/:username" element={authUser ? <Home /> : <Navigate to="/login" />} />
               <Route path="/" element={authUser ? <Home /> : <Navigate to="/login" />} />
               <Route path="/chat/:id" element={authUser ? <Chat /> : <Navigate to="/login" />} />
               <Route path="/groups" element={authUser ? <Groups /> : <Navigate to="/login" />} />
