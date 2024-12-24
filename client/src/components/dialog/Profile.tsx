@@ -2,6 +2,9 @@ import { useState } from "react";
 import { FaCamera } from "react-icons/fa";
 import { useFileHandler } from "6pp";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { AuthUser } from "../../interface/auth";
+import { Loader } from "../../App";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,21 +12,39 @@ const Profile = () => {
   const avatar = useFileHandler("single", 10);
   const [fullName, setFullName] = useState("Lalu Pratap");
 
+  const { username } = useParams();
 
-  interface AuthUser {
-    user: {
-      username: string;
-      email: string;
-      fullName: string; 
-      bio: string;
-      avatar: string; 
-    };  
-  }
-  const { data: authUser } = useQuery<AuthUser>({
+  const { data: authUser, isLoading: authUserLoading } = useQuery<AuthUser>({
     queryKey: ["authUser"],
   });
-  console.log("authUser:", authUser); // Debug: Log the entire authUser object
-console.log("authUser avatar:", authUser?.user.avatar); // Debug: Log the avatar field
+
+  const { data: user, isLoading: userLoading } = useQuery<AuthUser>({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(`/api/users/profile/${username}`);
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Something went wrong");
+        }
+        return data;
+      } catch (error: any) {
+        throw new Error(error);
+      }
+    },
+  });
+
+  // Check if either query is loading
+  if (authUserLoading || userLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader />
+        <div className="text-white text-xl">Loading...</div> 
+      </div>
+    );
+  }
+
+  const isMyProfile = authUser?.user.username === user?.user.username;
 
   return (
     <section className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto overflow-hidden">
@@ -31,23 +52,25 @@ console.log("authUser avatar:", authUser?.user.avatar); // Debug: Log the avatar
         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2">
           <div className="relative">
             <img
-              src={authUser?.user.avatar || "/avatar-placeholder.png"}
+              src={user?.user.avatar || "/avatar-placeholder.png"}
               alt="Profile"
               className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 object-cover"
             />
-            <label
-              htmlFor="profile-upload"
-              className="absolute bottom-0 right-0 p-2 rounded-full bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 transition-colors duration-200"
-            >
-              <FaCamera size={16} />
-              <input
-                type="file"
-                id="profile-upload"
-                accept="image/*"
-                className="hidden"
-                onChange={avatar.changeHandler}
-              />
-            </label>
+            {isMyProfile && (
+              <label
+                htmlFor="profile-upload"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-indigo-600 text-white cursor-pointer hover:bg-indigo-700 transition-colors duration-200"
+              >
+                <FaCamera size={16} />
+                <input
+                  type="file"
+                  id="profile-upload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={avatar.changeHandler}
+                />
+              </label>
+            )}
           </div>
         </div>
       </div>
@@ -72,34 +95,42 @@ console.log("authUser avatar:", authUser?.user.avatar); // Debug: Log the avatar
             </>
           ) : (
             <>
-              <h2 className="text-2xl font-bold dark:text-white pb-2">{authUser?.user.fullName}</h2>
-              <p className="text-gray-600 dark:text-gray-400">{bio}</p>
+              <h2 className="text-2xl font-bold dark:text-white pb-2">{user?.user.fullName}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{user?.user.bio}</p>
             </>
           )}
         </div>
 
         <div className="text-center">
-        <p className="text-gray-600 dark:text-gray-400">@{authUser?.user.username}</p>
+          <p className="text-gray-600 dark:text-gray-400">@{user?.user.username}</p>
         </div>
 
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400">{authUser?.user.email}</p>
+          <p className="text-gray-600 dark:text-gray-400">{user?.user.email}</p>
         </div>
 
         <div className="flex justify-center">
-          {!isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
-            >
-              Edit Profile
-            </button>
+          {isMyProfile ? (
+            !isEditing ? (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Save Changes
+              </button>
+            )
           ) : (
             <button
-              onClick={() => setIsEditing(false)}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
             >
-              Save Changes
+              Add Friend
             </button>
           )}
         </div>

@@ -9,7 +9,7 @@ const Chat = lazy(() => import("./pages/Chat"));
 const Groups = lazy(() => import("./pages/Groups"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const Loader = () => (
+export const Loader = () => (
   <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
     <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 dark:border-indigo-400 border-solid"></div>
   </div>
